@@ -1,5 +1,6 @@
 package hello.core.discount;
 
+import hello.core.AppConfig;
 import hello.core.member.Grade;
 import hello.core.member.Member;
 import hello.core.member.MemberService;
@@ -8,6 +9,7 @@ import hello.core.order.Order;
 import hello.core.order.OrderService;
 import hello.core.order.OrderServiceImpl;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -16,9 +18,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RateDiscountPolicyTest {
 
-  MemberService memberService = new MemberServiceImpl();
-  OrderService orderService = new OrderServiceImpl();
-  RateDiscountPolicy discountPolicy = new RateDiscountPolicy();
+  MemberService memberService;
+  OrderService orderService;
+
+  @BeforeEach
+  public void beforeEach(){
+    AppConfig appConfig = new AppConfig();
+    memberService = appConfig.memberService();
+    orderService = appConfig.orderService();
+  }
 
   @Test
   @DisplayName("VIP 는 10% 할인이 적용되어야 한다")
@@ -29,10 +37,11 @@ class RateDiscountPolicyTest {
     Order order = orderService.createOrder(member.getId(), "itemA", 10000);
 
     //when
-    int discount = discountPolicy.discount(member, 10000);
+    int resultPrice = order.calculatePrice();
 
     //then
-    assertThat(discount).isEqualTo(1000);
+    assertThat(resultPrice).isEqualTo(9000);
+
   }
 
   @Test
@@ -44,9 +53,9 @@ class RateDiscountPolicyTest {
     Order order = orderService.createOrder(member.getId(), "itemA", 10000);
 
     //when
-    int discount = discountPolicy.discount(member, 10000);
+    int discount = order.getDiscountPrice();
 
     //then
-    assertThat(discount).isEqualTo(1000);
+    assertThat(discount).isEqualTo(0);
   }
 }
